@@ -1,81 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial; background:#f5f6fa; margin:0; }
+    .container { max-width:800px; margin:auto; padding:20px; }
+    .card { background:white; padding:20px; margin-bottom:20px; border-radius:10px; }
+    input { width:100%; padding:10px; margin:8px 0; }
+    button { width:100%; padding:10px; background:black; color:white; border:none; }
+    .logout { background:red; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="login-page" class="card">
+    <h2>Admin Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin-panel" style="display:none;">
+
+    <div class="card">
+      <h2>Dashboard</h2>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="card">
+      <h3>Add Product</h3>
+      <input id="name" placeholder="Product Name">
+      <input id="price" type="number" placeholder="Price">
+      <button onclick="addProduct()">Add Product</button>
+    </div>
+
+    <div class="card">
+      <h3>Products</h3>
+      <div id="list"></div>
+    </div>
+
+  </div>
+</div>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCPG41eoQTPtps9zg20HckuIn31gM1s7Lc",
-    authDomain: "babiesproductstradingdb.firebaseapp.com",
-    projectId: "babiesproductstradingdb",
-    storageBucket: "babiesproductstradingdb.appspot.com",
-    messagingSenderId: "250975614380",
-    appId: "1:250975614380:web:13cad4dfa9c78111257609"
-  };
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "babiesproductstradingdb.firebaseapp.com",
+  projectId: "babiesproductstradingdb",
+  storageBucket: "babiesproductstradingdb.appspot.com",
+  messagingSenderId: "250975614380",
+  appId: "YOUR_APP_ID"
+};
 
-  // INIT
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // LOGIN
-  window.login = function () {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-
-    if (user === "admin" && pass === "1234") {
-      document.getElementById("login-page").style.display = "none";
-      document.getElementById("admin-panel").style.display = "block";
-      loadProducts();
-    } else {
-      alert("Invalid credentials");
-    }
-  };
-
-  // LOGOUT
-  window.logout = function () {
-    document.getElementById("admin-panel").style.display = "none";
-    document.getElementById("login-page").style.display = "block";
-  };
-
-  // ADD PRODUCT
-  window.submitProduct = async function () {
-    const name = document.getElementById("name").value;
-    const price = document.getElementById("price").value;
-
-    if (!name || !price) {
-      alert("Fill all fields");
-      return;
-    }
-
-    await addDoc(collection(db, "products"), {
-      name,
-      price: Number(price)
-    });
-
-    document.getElementById("name").value = "";
-    document.getElementById("price").value = "";
-
+// LOGIN
+window.login = function () {
+  if (
+    document.getElementById("username").value === "admin" &&
+    document.getElementById("password").value === "1234"
+  ) {
+    document.getElementById("login-page").style.display = "none";
+    document.getElementById("admin-panel").style.display = "block";
     loadProducts();
-  };
-
-  // LOAD PRODUCTS
-  async function loadProducts() {
-    const querySnapshot = await getDocs(collection(db, "products"));
-    const container = document.getElementById("product-list");
-    container.innerHTML = "";
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-
-      container.innerHTML += `
-        <div class="product">
-          <strong>${data.name}</strong><br>
-          ₱${data.price}
-        </div>
-      `;
-    });
+  } else {
+    alert("Wrong login");
   }
+};
+
+// LOGOUT
+window.logout = function () {
+  location.reload();
+};
+
+// ADD PRODUCT
+window.addProduct = async function () {
+  const name = document.getElementById("name").value;
+  const price = document.getElementById("price").value;
+
+  await addDoc(collection(db, "products"), {
+    name,
+    price: Number(price)
+  });
+
+  document.getElementById("name").value = "";
+  document.getElementById("price").value = "";
+
+  loadProducts();
+};
+
+// LOAD PRODUCTS
+async function loadProducts() {
+  const snap = await getDocs(collection(db, "products"));
+  const list = document.getElementById("list");
+
+  list.innerHTML = "";
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    list.innerHTML += `
+      <div>
+        <b>${d.name}</b> - ₱${d.price}
+      </div>
+    `;
+  });
+}
 </script>
+
+</body>
+</html>
