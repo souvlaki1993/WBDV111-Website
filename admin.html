@@ -1,193 +1,81 @@
-<!DOCTYPE html>
-
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f6fa;
-      margin: 0;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    button {
-      padding: 10px;
-      width: 100%;
-      border: none;
-      background: #111;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #333;
-    }
-
-    .product {
-      border-bottom: 1px solid #eee;
-      padding: 10px 0;
-    }
-
-    .product:last-child {
-      border-bottom: none;
-    }
-
-    .logout {
-      background: crimson;
-      margin-top: 10px;
-    }
-
-  </style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-  <!-- LOGIN -->
-
-  <div id="login-page" class="card">
-    <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
-
-  <!-- ADMIN PANEL -->
-
-  <div id="admin-panel" style="display:none;">
-
-```
-<div class="card">
-  <h2>Dashboard</h2>
-  <button class="logout" onclick="logout()">Logout</button>
-</div>
-
-<div class="card">
-  <h3>Add Product</h3>
-  <input type="text" id="name" placeholder="Product Name">
-  <input type="number" id="price" placeholder="Price">
-  <button onclick="submitProduct()">Add Product</button>
-</div>
-
-<div class="card">
-  <h3>Product List</h3>
-  <div id="product-list"></div>
-</div>
-```
-
-  </div>
-
-</div>
-
 <script type="module">
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCPG41eoQTPtps9zg20HckuIn31gM1s7Lc",
-  authDomain: "babiesproductstradingdb.firebaseapp.com",
-  projectId: "babiesproductstradingdb",
-  storageBucket: "babiesproductstradingdb.firebasestorage.app",
-  messagingSenderId: "250975614380",
-  appId: "1:250975614380:web:13cad4dfa9c78111257609"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCPG41eoQTPtps9zg20HckuIn31gM1s7Lc",
+    authDomain: "babiesproductstradingdb.firebaseapp.com",
+    projectId: "babiesproductstradingdb",
+    storageBucket: "babiesproductstradingdb.appspot.com",
+    messagingSenderId: "250975614380",
+    appId: "1:250975614380:web:13cad4dfa9c78111257609"
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+  // INIT
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-window.login = function() {
-  const user = document.getElementById("username").value;
-  const pass = document.getElementById("password").value;
+  // LOGIN
+  window.login = function () {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
 
-  if (user === "admin" && pass === "1234") {
-    document.getElementById("login-page").style.display = "none";
-    document.getElementById("admin-panel").style.display = "block";
+    if (user === "admin" && pass === "1234") {
+      document.getElementById("login-page").style.display = "none";
+      document.getElementById("admin-panel").style.display = "block";
+      loadProducts();
+    } else {
+      alert("Invalid credentials");
+    }
+  };
+
+  // LOGOUT
+  window.logout = function () {
+    document.getElementById("admin-panel").style.display = "none";
+    document.getElementById("login-page").style.display = "block";
+  };
+
+  // ADD PRODUCT
+  window.submitProduct = async function () {
+    const name = document.getElementById("name").value;
+    const price = document.getElementById("price").value;
+
+    if (!name || !price) {
+      alert("Fill all fields");
+      return;
+    }
+
+    await addDoc(collection(db, "products"), {
+      name,
+      price: Number(price)
+    });
+
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+
     loadProducts();
-  } else {
-    alert("Invalid credentials");
+  };
+
+  // LOAD PRODUCTS
+  async function loadProducts() {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    const container = document.getElementById("product-list");
+    container.innerHTML = "";
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      container.innerHTML += `
+        <div class="product">
+          <strong>${data.name}</strong><br>
+          ₱${data.price}
+        </div>
+      `;
+    });
   }
-};
-
-// LOGOUT
-window.logout = function() {
-  document.getElementById("admin-panel").style.display = "none";
-  document.getElementById("login-page").style.display = "block";
-};
-
-// ADD PRODUCT
-window.submitProduct = async function () {
-  const name = document.getElementById("name").value;
-  const price = document.getElementById("price").value;
-
-  if (!name || !price) {
-    alert("Fill all fields");
-    return;
-  }
-
-  await addDoc(collection(db, "products"), {
-    name,
-    price
-  });
-
-  document.getElementById("name").value = "";
-  document.getElementById("price").value = "";
-
-  loadProducts();
-};
-
-// LOAD PRODUCTS
-async function loadProducts() {
-  const querySnapshot = await getDocs(collection(db, "products"));
-  const container = document.getElementById("product-list");
-  container.innerHTML = "";
-
-  querySnapshot.forEach((doc) => {
-    const data = doc.data();
-
-    container.innerHTML += `
-      <div class="product">
-        <strong>${data.name}</strong><br>
-        ₱${data.price}
-      </div>
-    `;
-  });
-}
 </script>
-
-</body>
-</html>
