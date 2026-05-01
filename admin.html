@@ -92,13 +92,15 @@ window.logout = function () {
 
 // ADD PRODUCT
 window.addProduct = async function () {
-  const name = document.getElementById("name").value;
-  const price = document.getElementById("price").value;
+  console.log("TRYING WRITE...");
 
   await addDoc(collection(db, "products"), {
-    name,
-    price: Number(price)
+    name: "TEST PRODUCT",
+    price: 999
   });
+
+  console.log("WRITE DONE");
+};
 
   document.getElementById("name").value = "";
   document.getElementById("price").value = "";
