@@ -602,8 +602,63 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (subtotalElement) subtotalElement.textContent = formatCurrency(subtotal);
         if (totalElement) totalElement.textContent = formatCurrency(subtotal + shippingFee);
+        
     }
 
+
+    <script>
+function generateInvoice() {
+    // Example: replace this with your actual cart/order data
+    const order = {
+        id: "ORD12345",
+        date: new Date().toLocaleDateString(),
+        items: [
+            { name: "Baby Bottle", qty: 2, price: 150 },
+            { name: "Diapers", qty: 1, price: 300 }
+        ]
+    };
+
+    let total = 0;
+    let rows = "";
+
+    order.items.forEach(item => {
+        let itemTotal = item.qty * item.price;
+        total += itemTotal;
+
+        rows += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                <td>₱${item.price}</td>
+                <td>₱${itemTotal}</td>
+            </tr>
+        `;
+    });
+
+    // Fill invoice
+    document.getElementById("inv-order-id").innerText = order.id;
+    document.getElementById("inv-date").innerText = order.date;
+    document.getElementById("inv-items").innerHTML = rows;
+    document.getElementById("inv-total").innerText = total;
+
+    // Open printable window
+    let printWindow = window.open('', '', 'width=800,height=600');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Invoice</title>
+        </head>
+        <body>
+            ${document.getElementById("invoice").innerHTML}
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.print();
+}
+
     updateCart();
-    renderOrders();
+    renderOrders(); 
+    
 });
